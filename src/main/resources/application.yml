@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: One Day
+  profiles:
+    active: dev
+
+jwt:
+  secret:
+    key: one-day-jwt-secret-for-dev-purpose
+
+

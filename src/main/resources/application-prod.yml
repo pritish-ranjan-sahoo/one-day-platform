@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: One Day
+  datasource:
+    url: jdbc:postgresql://ep-lingering-art-a10ppaeu-pooler.ap-southeast-1.aws.neon.tech/oneDayDB?user=oneday_owner&password=npg_64NanWpXTMcs&sslmode=require&channelBinding=require
+    username: oneday_owner
+    password: npg_64NanWpXTMcs
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+
+server:
+  port: 9090
