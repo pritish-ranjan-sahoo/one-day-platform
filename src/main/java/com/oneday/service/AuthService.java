@@ -11,4 +11,5 @@ public interface AuthService {
     public SignupResponseDto signUp(SignupRequestDto newUser);
     public LoginResponseDto logIn(LoginRequestDto user);
     public LoginResponseDto handleOAuth2LoginRequest(OAuth2User oAuth2User, String registrationId);
+    public void logout();
 }

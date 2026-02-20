@@ -21,16 +21,17 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
+
         httpSecurity
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/public/**").authenticated()
-                        .requestMatchers("/user/**","/customer/**").authenticated()
+                        .requestMatchers("/user/**","/customer/**","/auth/logout").authenticated()
                         .requestMatchers("/admin/**").hasRole(RoleType.ADMIN.name())
-                        .anyRequest().permitAll())
+                        .requestMatchers("/public/**","/auth/**").permitAll()
+                        .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oAuth2 -> oAuth2
                         .failureHandler((request, response, exception) -> {

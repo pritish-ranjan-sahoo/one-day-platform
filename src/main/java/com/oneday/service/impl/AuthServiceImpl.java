@@ -2,10 +2,12 @@ package com.oneday.service.impl;
 
 import com.oneday.dto.*;
 import com.oneday.entity.AppUser;
+import com.oneday.entity.RefreshToken;
 import com.oneday.entity.type.AccountStatusType;
 import com.oneday.entity.type.OAuthProviderType;
 import com.oneday.entity.type.RoleType;
 import com.oneday.reposiratory.AppUserRepository;
+import com.oneday.reposiratory.RefreshTokenRepository;
 import com.oneday.service.AuthService;
 import com.oneday.service.RefreshTokenService;
 import com.oneday.util.AuthUtil;
@@ -15,10 +17,13 @@ import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.web.authentication.session.SessionAuthenticationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 
@@ -26,6 +31,7 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
+    private final RefreshTokenRepository refreshTokenRepository;
     private final AppUserRepository appUserRepository;
     private final AuthUtil authUtil;
     private final ModelMapper modelMapper;
@@ -127,5 +133,19 @@ public class AuthServiceImpl implements AuthService {
                 .refreshToken(newToken.getRefreshToken())
                 .userData(data)
                 .build();
+    }
+
+    @Transactional
+    @Override
+    public void logout() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new SessionAuthenticationException("User is not logged in");
+        }
+
+        String username = authentication.getName();
+        refreshTokenRepository.deleteByUser_Username(username);
+        SecurityContextHolder.getContext().setAuthentication(null);
     }
 }
