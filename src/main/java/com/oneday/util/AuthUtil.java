@@ -1,6 +1,9 @@
 package com.oneday.util;
 
+import com.oneday.entity.type.OAuthProviderType;
 import com.oneday.entity.type.RoleType;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
@@ -17,6 +20,24 @@ public class AuthUtil {
             return RoleType.CUSTOMER.name();
         } else {
             return RoleType.USER.name();
+        }
+    }
+
+    public String getProviderId(OAuth2User oAuth2User, String registrationId){
+        switch (registrationId.toLowerCase()) {
+            case "github" :
+                return oAuth2User.getAttribute("id").toString();
+            default:
+                throw new OAuth2AuthenticationException("Unknown registration id found");
+        }
+    }
+
+    public OAuthProviderType getProviderName(String registrationId){
+        switch (registrationId.toLowerCase()) {
+            case "github" :
+                return OAuthProviderType.GITHUB;
+            default:
+                throw new OAuth2AuthenticationException("Unknown registration id found");
         }
     }
 }

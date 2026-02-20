@@ -10,6 +10,11 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  security.oauth2.client:
+    registration:
+      github:
+        client-id: Ov23li6J0A2dAmBDMgCb
+        client-secret: ad1d6840a64f7db0aee35af6e5034f53b9064d69
 server:
   port: 8080
 

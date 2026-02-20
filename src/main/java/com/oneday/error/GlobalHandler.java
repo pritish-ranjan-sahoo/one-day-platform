@@ -8,6 +8,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.web.authentication.session.SessionAuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -59,6 +60,12 @@ public class GlobalHandler {
     @ExceptionHandler(SessionAuthenticationException.class)
     public ResponseEntity<ErrorLog> handleSessionAuthenticationException(SessionAuthenticationException ex){
         ErrorLog err = new ErrorLog("Session Expired: "+ex.getMessage(),HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(err,HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(OAuth2AuthenticationException.class)
+    public ResponseEntity<ErrorLog> handleOAuth2AuthenticationException(OAuth2AuthenticationException ex){
+        ErrorLog err = new ErrorLog("Authentication Unsuccessful: "+ex.getMessage(),HttpStatus.BAD_REQUEST);
         return new ResponseEntity<>(err,HttpStatus.BAD_REQUEST);
     }
 

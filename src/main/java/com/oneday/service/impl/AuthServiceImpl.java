@@ -3,9 +3,9 @@ package com.oneday.service.impl;
 import com.oneday.dto.*;
 import com.oneday.entity.AppUser;
 import com.oneday.entity.type.AccountStatusType;
+import com.oneday.entity.type.OAuthProviderType;
 import com.oneday.entity.type.RoleType;
 import com.oneday.reposiratory.AppUserRepository;
-import com.oneday.security.JwtUtil;
 import com.oneday.service.AuthService;
 import com.oneday.service.RefreshTokenService;
 import com.oneday.util.AuthUtil;
@@ -17,6 +17,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -83,5 +84,48 @@ public class AuthServiceImpl implements AuthService {
                 .userData(data)
                 .build();
         return response;
+    }
+
+
+    @Override
+    public LoginResponseDto handleOAuth2LoginRequest(OAuth2User oAuth2User, String registrationId) {
+
+        String userMail = oAuth2User.getAttribute("email");
+        String providerId = authUtil.getProviderId(oAuth2User,registrationId);
+        OAuthProviderType provider = authUtil.getProviderName(registrationId);
+
+        // checking for same id - simple login if found
+        AppUser appUser = appUserRepository.findByProviderNameAndProviderId(provider,providerId).orElse(null);
+
+        if(appUser==null){
+            // checking for same email id - link account if found
+            appUser = appUserRepository.findByEmailOrUsername(userMail,userMail).orElse(null);
+            if(appUser!=null){
+                appUser.setProviderName(provider);
+                appUser.setProviderId(providerId);
+                appUserRepository.save(appUser);
+            } else {
+                appUser = AppUser.builder()
+                        .username(userMail)
+                        .email(userMail)
+                        .providerName(provider)
+                        .providerId(providerId)
+                        .roles(Set.of(RoleType.USER))
+                        .accountStatus(AccountStatusType.ACTIVATED)
+                        .build();
+                appUserRepository.save(appUser);
+            }
+        }
+
+        UserDataDto data = modelMapper.map(appUser,UserDataDto.class);
+        data.setRole(authUtil.findRole(appUser.getRoles()));
+        RefreshTokenDto newToken = refreshTokenService.generateRefreshToken(appUser.getUsername());
+        data.setAccessToken(newToken.getAccessToken());
+
+        return LoginResponseDto
+                .builder()
+                .refreshToken(newToken.getRefreshToken())
+                .userData(data)
+                .build();
     }
 }

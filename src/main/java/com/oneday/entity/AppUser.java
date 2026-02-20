@@ -20,6 +20,14 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "unique_provider_providerId",
+                        columnNames = {"providerName","providerId"}
+                )
+        }
+)
 public class AppUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,9 +42,9 @@ public class AppUser {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    private OAuthProviderType OAuthProvider;
+    private OAuthProviderType providerName;
 
-    private String OAuthProviderId;
+    private String providerId;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)

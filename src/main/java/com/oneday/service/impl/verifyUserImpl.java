@@ -25,6 +25,10 @@ public class verifyUserImpl implements UserDetailsService {
                 () -> new UsernameNotFoundException("User not found!!")
         );
 
+        if(user.getProviderName()!=null && user.getProviderId()!=null){
+            throw new UsernameNotFoundException("User created through "+user.getProviderName().name());
+        }
+
         return User.builder()
                 .username(user.getUsername())
                 .password(user.getPassword())
