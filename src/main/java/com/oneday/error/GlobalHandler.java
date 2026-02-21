@@ -13,6 +13,8 @@ import org.springframework.security.web.authentication.session.SessionAuthentica
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.security.InvalidParameterException;
+
 @RestControllerAdvice
 public class GlobalHandler {
     @ExceptionHandler(UsernameNotFoundException.class)
@@ -66,6 +68,12 @@ public class GlobalHandler {
     @ExceptionHandler(OAuth2AuthenticationException.class)
     public ResponseEntity<ErrorLog> handleOAuth2AuthenticationException(OAuth2AuthenticationException ex){
         ErrorLog err = new ErrorLog("Authentication Unsuccessful: "+ex.getMessage(),HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(err,HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidParameterException.class)
+    public ResponseEntity<ErrorLog> handleInvalidParameterException(InvalidParameterException ex){
+        ErrorLog err = new ErrorLog("Invalid parameter found: "+ex.getMessage(),HttpStatus.BAD_REQUEST);
         return new ResponseEntity<>(err,HttpStatus.BAD_REQUEST);
     }
 

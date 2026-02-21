@@ -6,7 +6,6 @@ spring:
     username: oneday_owner
     password: npg_64NanWpXTMcs
     driver-class-name: org.postgresql.Driver
-
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
@@ -17,5 +16,23 @@ spring:
       github:
         client-id: Ov23li6J0A2dAmBDMgCb
         client-secret: ad1d6840a64f7db0aee35af6e5034f53b9064d69
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: <your-mail@mail.com>
+    password: <google-app-password>
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
 server:
   port: 9090

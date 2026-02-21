@@ -14,18 +14,17 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class VerifyOtp {
+public class OtpList {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long verificationId;
 
-    @Column(nullable = false, unique = true)
-    private String mailId;
+    @Column(unique = true, nullable = false)
+    private String email;
 
     @Column(nullable = false)
     private String otp;
 
-    @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime creationDate;
 

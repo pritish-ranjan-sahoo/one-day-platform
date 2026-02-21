@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -44,7 +45,7 @@ public class AuthServiceImpl implements AuthService {
         AppUser appUser = AppUser
                 .builder()
                 .username(newUser.getUsername())
-                .email(newUser.getEmail())
+                .email(newUser.getEmail().toLowerCase())
                 .password(passwordEncoder.encode(newUser.getPassword()))
                 .roles(Set.of(RoleType.USER))
                 .accountStatus(AccountStatusType.ACTIVATED)
@@ -93,37 +94,53 @@ public class AuthServiceImpl implements AuthService {
     }
 
 
+    @Transactional
     @Override
     public LoginResponseDto handleOAuth2LoginRequest(OAuth2User oAuth2User, String registrationId) {
 
         String userMail = oAuth2User.getAttribute("email");
-        String providerId = authUtil.getProviderId(oAuth2User,registrationId);
+        String providerId = authUtil.getProviderId(oAuth2User, registrationId);
         OAuthProviderType provider = authUtil.getProviderName(registrationId);
 
         // checking for same id - simple login if found
-        AppUser appUser = appUserRepository.findByProviderNameAndProviderId(provider,providerId).orElse(null);
+        AppUser appUser = appUserRepository.findByProviderNameAndProviderId(provider, providerId).orElse(null);
 
-        if(appUser==null){
-            // checking for same email id - link account if found
-            appUser = appUserRepository.findByEmailOrUsername(userMail,userMail).orElse(null);
-            if(appUser!=null){
-                appUser.setProviderName(provider);
-                appUser.setProviderId(providerId);
-                appUserRepository.save(appUser);
+        if (appUser == null) {
+            if (userMail != null && !userMail.isBlank()) {
+                // checking for same email id - link account if found
+                appUser = appUserRepository.findByEmail(userMail.toLowerCase()).orElse(null);
+                if (appUser != null) {
+                    appUser.setProviderName(provider);
+                    appUser.setProviderId(providerId);
+                } else {
+                    appUser = AppUser.builder()
+                            .providerName(provider)
+                            .providerId(providerId)
+                            .username(userMail.toLowerCase())
+                            .email(userMail.toLowerCase())
+                            .roles(Set.of(RoleType.USER))
+                            .accountStatus(AccountStatusType.ACTIVATED)
+                            .build();
+
+                }
             } else {
                 appUser = AppUser.builder()
-                        .username(userMail)
-                        .email(userMail)
                         .providerName(provider)
                         .providerId(providerId)
+                        .username(UUID.randomUUID().toString())
                         .roles(Set.of(RoleType.USER))
                         .accountStatus(AccountStatusType.ACTIVATED)
                         .build();
+            }
+            appUserRepository.save(appUser);
+        } else {
+            if(appUser.getEmail()==null && (userMail != null && !userMail.isBlank())){
+                appUser.setEmail(userMail.toLowerCase());
                 appUserRepository.save(appUser);
             }
         }
 
-        UserDataDto data = modelMapper.map(appUser,UserDataDto.class);
+        UserDataDto data = modelMapper.map(appUser, UserDataDto.class);
         data.setRole(authUtil.findRole(appUser.getRoles()));
         RefreshTokenDto newToken = refreshTokenService.generateRefreshToken(appUser.getUsername());
         data.setAccessToken(newToken.getAccessToken());

@@ -31,7 +31,7 @@ import java.util.Set;
 public class AppUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long UserId;
+    private Long userId;
 
     @Column(nullable = false, unique = true)
     private String username;
